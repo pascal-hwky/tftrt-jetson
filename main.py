@@ -22,28 +22,36 @@ model = get_model()
 model.save('model')
 
 # Test 1: load model in TF
+print("Loading model in TF runtime")
 loaded_model = keras.models.load_model('model')
 
 # Test 2: create TensorRT inference graph
 # See https://docs.nvidia.com/deeplearning/frameworks/tf-trt-user-guide/index.html#worflow-with-savedmodel
+print("Creating conversion parameters")
 conversion_params = trt.DEFAULT_TRT_CONVERSION_PARAMS
 conversion_params = conversion_params._replace(
     max_workspace_size_bytes=(1<<32))
 conversion_params = conversion_params._replace(precision_mode="FP16")
 conversion_params = conversion_params._replace(
-    maximum_cached_engiens=100)
+    maximum_cached_engines=100)
 
 converter = trt.TrtGraphConverterV2(
     input_saved_model_dir='model',
     conversion_params=conversion_params)
+
+print("Converting")
 converter.convert()
+
+print("Building TensorRT graph")
 def my_input_fn():
   for _ in range(100):
     inp1 = np.random.normal(size=(8, 32)).astype(np.float32)
     inp2 = np.random.normal(size=(8, 32)).astype(np.float32)
     yield inp1#, inp2
-converter.build(input_fn=my_input_fn).converter.save('model-tftrt')
+converter.build(input_fn=my_input_fn)
+converter.save('model-tftrt')
 
+print("Creating frozen inference function")
 saved_model_loaded = tf.saved_model.load(
     'model-tftrt', tags=[tf.compat.v1.saved_model.tag_constants.SERVING])
 graph_func = saved_model_loaded.signatures[
@@ -51,5 +59,8 @@ graph_func = saved_model_loaded.signatures[
 frozen_func = tf.python.framework.convert_to_constants.convert_variables_to_constants_v2(
     graph_func)
 
+print("Performing test inference")
 input_data = np.random.normal(size=(8, 32)).astype(np.float32)
 output = frozen_func(input_data)[0].numpy()
+
+print(f"Output: {output}")
