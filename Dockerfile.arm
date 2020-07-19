@@ -1,0 +1,5 @@
+FROM nvcr.io/nvidia/l4t-tensorflow:r32.4.3-tf2.2-py3
+
+COPY main.py main.py
+
+CMD python main.py

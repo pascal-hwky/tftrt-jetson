@@ -1,0 +1,5 @@
+FROM nvcr.io/nvidia/tensorflow:20.06-tf2-py3
+
+WORKDIR /shared/
+
+CMD bash
