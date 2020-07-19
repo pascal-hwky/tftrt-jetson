@@ -11,7 +11,11 @@ def get_model():
     Simple model for TF-TRT runtime demo purpose only
     """
     inputs = keras.Input(shape=(32,))
-    outputs = keras.layers.Dense(1)(inputs)
+    x = keras.layers.Dense(32)(inputs)
+    x = keras.layers.Dense(32)(x)
+    x = keras.layers.Dense(32)(x)
+    x = keras.layers.Dense(32)(x)
+    outputs = keras.layers.Dense(1)(x)
     model = keras.Model(inputs, outputs)
     model.compile(optimizer="adam", loss="mean_squared_error")
     return model
@@ -34,6 +38,7 @@ conversion_params = conversion_params._replace(
 conversion_params = conversion_params._replace(precision_mode="FP16")
 conversion_params = conversion_params._replace(
     maximum_cached_engines=100)
+conversion_params = conversion_params._replace(minimum_segment_size=1)
 
 converter = trt.TrtGraphConverterV2(
     input_saved_model_dir='model',
@@ -46,8 +51,7 @@ print("Building TensorRT graph")
 def my_input_fn():
   for _ in range(100):
     inp1 = np.random.normal(size=(8, 32)).astype(np.float32)
-    inp2 = np.random.normal(size=(8, 32)).astype(np.float32)
-    yield inp1#, inp2
+    yield inp1,
 converter.build(input_fn=my_input_fn)
 converter.save('model-tftrt')
 
@@ -60,7 +64,7 @@ frozen_func = tf.python.framework.convert_to_constants.convert_variables_to_cons
     graph_func)
 
 print("Performing test inference")
-input_data = np.random.normal(size=(8, 32)).astype(np.float32)
+input_data = tf.convert_to_tensor(np.random.normal(size=(8, 32)).astype(np.float32))
 output = frozen_func(input_data)[0].numpy()
 
 print(f"Output: {output}")
