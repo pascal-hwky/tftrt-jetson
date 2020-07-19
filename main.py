@@ -33,12 +33,10 @@ loaded_model = keras.models.load_model('model')
 # See https://docs.nvidia.com/deeplearning/frameworks/tf-trt-user-guide/index.html#worflow-with-savedmodel
 print("Creating conversion parameters")
 conversion_params = trt.DEFAULT_TRT_CONVERSION_PARAMS
-conversion_params = conversion_params._replace(
-    max_workspace_size_bytes=(1<<32))
+conversion_params = conversion_params._replace(max_workspace_size_bytes=(1<<32))
 conversion_params = conversion_params._replace(precision_mode="FP16")
-conversion_params = conversion_params._replace(
-    maximum_cached_engines=100)
-conversion_params = conversion_params._replace(minimum_segment_size=1)
+conversion_params = conversion_params._replace(maximum_cached_engines=100)
+conversion_params = conversion_params._replace(minimum_segment_size=3)
 
 converter = trt.TrtGraphConverterV2(
     input_saved_model_dir='model',
