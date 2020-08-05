@@ -10,7 +10,8 @@ def get_model():
     """
     Simple model for TF-TRT runtime demo purpose only
     """
-    inputs = keras.Input(shape=(32,))
+    # Note: TF-TRT requires 4 dimensions for optimization (including the batch dimension)
+    inputs = keras.Input(shape=(32, 1, 1,))
     x = keras.layers.Dense(32)(inputs)
     x = keras.layers.Dense(32)(x)
     x = keras.layers.Dense(32)(x)
@@ -48,7 +49,7 @@ converter.convert()
 print("Building TensorRT graph")
 def my_input_fn():
   for _ in range(100):
-    inp1 = np.random.normal(size=(8, 32)).astype(np.float32)
+    inp1 = np.random.normal(size=(8, 32, 1, 1)).astype(np.float32)
     yield inp1,
 converter.build(input_fn=my_input_fn)
 converter.save('model-tftrt')
@@ -62,7 +63,7 @@ frozen_func = tf.python.framework.convert_to_constants.convert_variables_to_cons
     graph_func)
 
 print("Performing test inference")
-input_data = tf.convert_to_tensor(np.random.normal(size=(8, 32)).astype(np.float32))
+input_data = tf.convert_to_tensor(np.random.normal(size=(8, 32, 1, 1)).astype(np.float32))
 output = frozen_func(input_data)[0].numpy()
 
 print(f"Output: {output}")
