@@ -11,11 +11,11 @@ def get_model():
     Simple model for TF-TRT runtime demo purpose only
     """
     # Note: TF-TRT requires 4 dimensions for optimization (including the batch dimension)
-    inputs = keras.Input(shape=(32, 1, 1,))
-    x = keras.layers.Dense(32)(inputs)
-    x = keras.layers.Dense(32)(x)
-    x = keras.layers.Dense(32)(x)
-    x = keras.layers.Dense(32)(x)
+    inputs = keras.Input(shape=(32, 32, 3,))
+    x = keras.layers.Conv2D(32, (3, 3))(inputs)
+    x = keras.layers.Conv2D(32, (3, 3))(x)
+    x = keras.layers.Conv2D(32, (3, 3))(x)
+    x = keras.layers.Conv2D(32, (3, 3))(x)
     outputs = keras.layers.Dense(1)(x)
     model = keras.Model(inputs, outputs)
     model.compile(optimizer="adam", loss="mean_squared_error")
@@ -34,7 +34,7 @@ loaded_model = keras.models.load_model('model')
 # See https://docs.nvidia.com/deeplearning/frameworks/tf-trt-user-guide/index.html#worflow-with-savedmodel
 print("Creating conversion parameters")
 conversion_params = trt.DEFAULT_TRT_CONVERSION_PARAMS
-conversion_params = conversion_params._replace(max_workspace_size_bytes=(1<<32))
+conversion_params = conversion_params._replace(max_workspace_size_bytes=(1<<30))
 conversion_params = conversion_params._replace(precision_mode="FP16")
 conversion_params = conversion_params._replace(maximum_cached_engines=100)
 conversion_params = conversion_params._replace(minimum_segment_size=3)
@@ -49,7 +49,7 @@ converter.convert()
 print("Building TensorRT graph")
 def my_input_fn():
   for _ in range(100):
-    inp1 = np.random.normal(size=(8, 32, 1, 1)).astype(np.float32)
+    inp1 = np.random.normal(size=(8, 32, 32, 3)).astype(np.float32)
     yield inp1,
 converter.build(input_fn=my_input_fn)
 converter.save('model-tftrt')
@@ -63,7 +63,7 @@ frozen_func = tf.python.framework.convert_to_constants.convert_variables_to_cons
     graph_func)
 
 print("Performing test inference")
-input_data = tf.convert_to_tensor(np.random.normal(size=(8, 32, 1, 1)).astype(np.float32))
+input_data = tf.convert_to_tensor(np.random.normal(size=(8, 32, 32, 3)).astype(np.float32))
 output = frozen_func(input_data)[0].numpy()
 
 print(f"Output: {output}")

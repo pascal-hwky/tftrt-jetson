@@ -12,15 +12,6 @@ cd tftrt-jetson
 ./arm.sh
 ```
 
-**Note**: the TensorRT optimization step currently fails with the following message:
-
-```
-E tensorflow/compiler/tf2tensorrt/utils/trt_logger.cc:42] DefaultLogger ../builder/symbolicDims.cpp (625) - Assertion Error in fromSymbolic: 0 (x must be build-time constant)
-W tensorflow/compiler/tf2tensorrt/kernels/trt_engine_op.cc:1002] Engine creation for PartitionedCall/TRTEngineOp_0 failed. The native segment will be used instead. Reason: Internal: Failed to build TensorRT engine
-```
-
-However, the inference will continue to run.
-
 ## Running on development PC:
 
 If you want to make changes to the code while testing in a Docker container on a development PC, run the following command:
