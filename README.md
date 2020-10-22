@@ -12,6 +12,14 @@ cd tftrt-jetson
 ./arm.sh
 ```
 
+A built-in toy model is used. If you would like to use your own SavedModel, download it to a folder `model` in this repo:
+
+```
+aws s3 sync s3://path/to/saved/model model
+```
+
+Then, run `arm.sh` again.
+
 ## Running on development PC:
 
 If you want to make changes to the code while testing in a Docker container on a development PC, run the following command:
